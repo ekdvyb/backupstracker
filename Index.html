@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NRICHARDS GROUP BACKUP MONITORING SYSTEMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --balmain: #3498db;
+            --norich: #9b59b6;
+            --nrm: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .logo p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .current-date-display {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .current-date-display .date {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .current-date-display .time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .region-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .region-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .region-btn.balmain {
+            background-color: var(--balmain);
+            color: white;
+        }
+        
+        .region-btn.norich {
+            background-color: var(--norich);
+            color: white;
+        }
+        
+        .region-btn.nrm {
+            background-color: var(--nrm);
+            color: white;
+        }
+        
+        .region-btn.active {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .region-btn:hover:not(.active) {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .date-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .date-picker-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .date-picker-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 1rem;
+            min-width: 180px;
+            cursor: pointer;
+        }
+        
+        .calendar-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 15px;
+            width: 300px;
+            display: none;
+        }
+        
+        .calendar-popup.active {
+            display: block;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .calendar-nav:hover {
+            background: #f0f0f0;
+        }
+        
+        .calendar-month-year {
+            font-weight: 600;
+        }
+        
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .calendar-day {
+            padding: 8px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .calendar-day:hover {
+            background: #f0f0f0;
+        }
+        
+        .calendar-day.selected {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .calendar-day.disabled:hover {
+            background: transparent;
+        }
+        
+        .calendar-day.other-month {
+            color: #aaa;
+        }
+        
+        .nav-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-size: 1.05rem;
+        }
+        
+        .tab.active {
+            background-color: var(--light);
+            border-bottom: 3px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #f9f9f9;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .balmain-header {
+            background: linear-gradient(to right, var(--balmain), #2980b9);
+        }
+        
+        .norich-header {
+            background: linear-gradient(to right, var(--norich), #8e44ad);
+        }
+        
+        .nrm-header {
+            background: linear-gradient(to right, var(--nrm), #c0392b);
+        }
+        
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .region-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-pill {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        .branch-list {
+            list-style: none;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .branch-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .branch-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .branch-item:last-child {
+            border-bottom: none;
+        }
+        
+        .branch-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .branch-checks {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .check-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .check-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+        
+        .fdms-select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 0.85rem;
+        }
+        
+        .fdms-success {
+            background-color: #e8f6ef;
+            color: var(--success);
+        }
+        
+        .fdms-failed {
+            background-color: #fdedec;
+            color: var(--danger);
+        }
+        
+        .stats-card {
+            grid-column: 1 / -1;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--success), #2ecc71);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+        }
+        
+        .chart-card h3 {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.95rem;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-table th {
+            background-color: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .history-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background-color: #e8f6ef;
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: #fef9e7;
+            color: var(--warning);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .save-indicator {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+        }
+        
+        .save-indicator.show {
+            transform: translateX(0);
+        }
+        
+        .print-only {
+            display: none;
+        }
+        
+        .data-storage-info {
+            background: #e8f4fd;
+            border-left: 4px solid var(--secondary);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 1400px) {
+            .filters-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .branch-checks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .region-selector {
+                flex-direction: column;
+            }
+            
+            .date-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .save-indicator {
+                top: 15px;
+                right: 15px;
+                left: 15px;
+                transform: translateY(-100px);
+            }
+            
+            .save-indicator.show {
+                transform: translateY(0);
+            }
+            
+            .filters-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .branch-checks {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .tab-content.active, 
+            .tab-content.active * {
+                visibility: visible;
+            }
+            
+            .tab-content.active {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            
+            .tabs, .action-buttons, .date-navigation, .filters-container, .region-selector {
+                display: none !important;
+            }
+            
+            .print-only {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.2rem;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-database"></i>
+                    <div>
+                        <h1>NRICHARDS GROUP BACKUP MONITORING SYSTEMS</h1>
+                        <p>Real-time status tracking across all regions</p>
+                    </div>
+                </div>
+                <div class="current-date-display">
+                    <div class="date" id="current-date">November 21, 2025</div>
+                    <div class="time" id="current-time">Loading...</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="data-storage-info">
+            <i class="fas fa-info-circle"></i>
+            <span>All data is securely stored in your browser and will persist between sessions.</span>
+        </div>
+        
+        <div class="region-selector">
+            <button class="region-btn balmain active" data-region="balmain">
+                <i class="fas fa-store"></i> Balmain Stores
+            </button>
+            <button class="region-btn norich" data-region="norich">
+                <i class="fas fa-shopping-cart"></i> Norich Sales
+            </button>
+            <button class="region-btn nrm" data-region="nrm">
+                <i class="fas fa-warehouse"></i> N.R.M Region
+            </button>
+        </div>
+        
+        <div class="date-navigation">
+            <div class="date-selector">
+                <label for="report-date">Select Reporting Date:</label>
+                <div class="date-picker-container">
+                    <input type="text" class="date-picker-input" id="report-date" readonly placeholder="Select a date">
+                    <div class="calendar-popup" id="calendar-popup">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                            <div class="calendar-month-year" id="calendar-month-year">November 2025</div>
+                            <button class="calendar-nav" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div class="calendar-days" id="calendar-days">
+                            <!-- Calendar days will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="nav-btn" id="prev-date">
+                    <i class="fas fa-chevron-left"></i> Previous Day
+                </button>
+                <button class="nav-btn" id="next-date">
+                    Next Day <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="dashboard">Data Entry</div>
+            <div class="tab" data-tab="insights">Insights</div>
+            <div class="tab" data-tab="history">History</div>
+        </div>
+        
+        <div class="tab-content active" id="dashboard-tab">
+            <div class="stats-card card">
+                <div class="card-header" style="background: linear-gradient(to right, var(--primary), var(--dark));">
+                    <h2>System Overview for <span id="stats-date">November 21, 2025</span></h2>
+                    <div class="region-stats">
+                        <div class="stat-pill">Total Branches: <span id="total-branches">41</span></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="stats-container">
+                        <div class="stat-box">
+                            <div class="stat-label">Batch Jobs Completed</div>
+                            <div class="stat-value" id="completed-batchjobs">0</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-batchjobs" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Backups Done</div>
+                            <div class="stat-value" id="completed-backups">0</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-backups" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Data Ports Done</div>
+                            <div class="stat-value" id="completed-dataports">0</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-dataports" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">FDMS Successful</div>
+                            <div class="stat-value" id="successful-fdms">0</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fdms" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card" id="balmain-card">
+                    <div class="card-header balmain-header">
+                        <h2>Balmain Stores</h2>
+                        <div class="region-stats">
+                            <div class="stat-pill">Branches: <span id="balmain-count">6</span></div>
+                            <div class="stat-pill">Completed: <span id="balmain-completed">0</span></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="branch-list" id="balmain-branches">
+                            <!-- Branches will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" id="norich-card" style="display: none;">
+                    <div class="card-header norich-header">
+                        <h2>Norich Sales</h2>
+                        <div class="region-stats">
+                            <div class="stat-pill">Branches: <span id="norich-count">6</span></div>
+                            <div class="stat-pill">Completed: <span id="norich-completed">0</span></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="branch-list" id="norich-branches">
+                            <!-- Branches will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" id="nrm-card" style="display: none;">
+                    <div class="card-header nrm-header">
+                        <h2>N.R.M Region</h2>
+                        <div class="region-stats">
+                            <div class="stat-pill">Branches: <span id="nrm-count">17</span></div>
+                            <div class="stat-pill">Completed: <span id="nrm-completed">0</span></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="branch-list" id="nrm-branches">
+                            <!-- Branches will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="save-btn">
+                    <i class="fas fa-save"></i> Save Current Status
+                </button>
+                <button class="btn btn-success" id="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Daily Report
+                </button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="insights-tab">
+            <div class="charts-section">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Regional Completion Rates</h3>
+                    <div class="chart-container">
+                        <canvas id="regionalChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Task Completion Overview</h3>
+                    <div class="chart-container">
+                        <canvas id="taskChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line"></i> Performance Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-tasks"></i> Regional Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="history-tab">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label">Date</label>
+                    <select class="filter-select" id="filter-date">
+                        <option value="">All Dates</option>
+                        <!-- Dates will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Branch</label>
+                    <select class="filter-select" id="filter-branch">
+                        <option value="">All Branches</option>
+                        <!-- Branches will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Batch Job</label>
+                    <select class="filter-select" id="filter-batchjob">
+                        <option value="">All</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Data Ports</label>
+                    <select class="filter-select" id="filter-dataports">
+                        <option value="">All</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">FDMS</label>
+                    <select class="filter-select" id="filter-fdms">
+                        <option value="">All</option>
+                        <option value="successful">Successful</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-warning" id="print-btn">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <button class="btn btn-primary" id="export-btn">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(to right, var(--primary), var(--dark));">
+                    <h2>Backup History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="print-only">
+                        <h3>NRICHARDS GROUP Backup Status Report</h3>
+                        <p>Generated on: <span id="print-date"></span></p>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Branch</th>
+                                <th>Region</th>
+                                <th>Batch Job</th>
+                                <th>Backup</th>
+                                <th>Data Ports</th>
+                                <th>FDMS</th>
+                                <th>Reported By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- History will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>NRICHARDS GROUP BACKUP MONITORING SYSTEMS • Last updated: <span id="last-updated-time"></span></p>
+        </div>
+    </div>
+
+    <!-- Save confirmation indicator -->
+    <div class="save-indicator" id="save-indicator">
+        <i class="fas fa-check-circle"></i>
+        <span id="save-message">Status saved successfully!</span>
+    </div>
+
+    <script>
+        // Branch data with all regions
+        const branches = {
+            balmain: ["Gweru", "Kwekwe", "Kadoma", "Chivhu", "Gokwe", "Kwekwe"],
+            norich: ["Karoi", "Chinhoyi", "Bulawayo", "Bindura", "Rusape", "Marondera"],
+            nrm: ["Chivi", "Hurudza", "Masvingo Wholesale", "Chiredzi Wholesale", "Chiredzi Hardware", 
+                  "Nyika", "Beitbridge", "Checheche", "Mpandawana", "Jerera", "Chiredzi CC", 
+                  "Masvingo CC", "Chipinge WS", "Chipinge HW", "Zvishavane", "Bradburn", "Masvingo Hardware"]
+        };
+        
+        // Chart instances
+        let regionalChart, taskChart, trendChart, comparisonChart;
+        
+        // Track if changes have been made
+        let unsavedChanges = false;
+        
+        // Current active region
+        let activeRegion = 'balmain';
+        
+        // Calendar state
+        let currentCalendarDate = new Date(2025, 10, 1); // November 1, 2025
+        let selectedDate = new Date();
+        
+        // Set minimum date to November 1, 2025
+        const minDate = new Date(2025, 10, 1); // November 1, 2025
+        
+        // Format date as "Nov 19, 2025"
+        function formatDate(date) {
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        // Format date as "2025-11-19" for storage
+        function formatDateForStorage(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        // Update current date and time display
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = formatDate(now);
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+            document.getElementById('last-updated-time').textContent = now.toLocaleString();
+        }
+        
+        // Show save confirmation
+        function showSaveConfirmation(message) {
+            const indicator = document.getElementById('save-indicator');
+            const messageElement = document.getElementById('save-message');
+            
+            messageElement.textContent = message;
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Switch active region
+        function switchRegion(region) {
+            activeRegion = region;
+            
+            // Update active button
+            document.querySelectorAll('.region-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.region-btn[data-region="${region}"]`).classList.add('active');
+            
+            // Show/hide region cards
+            document.getElementById('balmain-card').style.display = region === 'balmain' ? 'block' : 'none';
+            document.getElementById('norich-card').style.display = region === 'norich' ? 'block' : 'none';
+            document.getElementById('nrm-card').style.display = region === 'nrm' ? 'block' : 'none';
+        }
+        
+        // Calendar functions
+        function renderCalendar(date) {
+            const calendarDays = document.getElementById('calendar-days');
+            const monthYear = document.getElementById('calendar-month-year');
+            
+            // Set month and year
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            monthYear.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            
+            // Clear previous calendar
+            calendarDays.innerHTML = '';
+            
+            // Get first day of month and number of days in month
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < startingDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                emptyDay.textContent = '';
+                calendarDays.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                day.textContent = i;
+                
+                const currentDate = new Date(date.getFullYear(), date.getMonth(), i);
+                
+                // Check if date is before November 2025
+                if (currentDate < minDate) {
+                    day.classList.add('disabled');
+                } else {
+                    // Check if this is the selected date
+                    if (currentDate.toDateString() === selectedDate.toDateString()) {
+                        day.classList.add('selected');
+                    }
+                    
+                    day.addEventListener('click', function() {
+                        selectDate(currentDate);
+                    });
+                }
+                
+                calendarDays.appendChild(day);
+            }
+        }
+        
+        function selectDate(date) {
+            selectedDate = date;
+            document.getElementById('report-date').value = formatDate(date);
+            document.getElementById('stats-date').textContent = formatDate(date);
+            document.getElementById('calendar-popup').classList.remove('active');
+            
+            // Load data for selected date
+            loadDateData();
+            unsavedChanges = false;
+        }
+        
+        function prevMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar(currentCalendarDate);
+        }
+        
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar(currentCalendarDate);
+        }
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up real-time clock
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Set initial selected date to today or minDate if today is before minDate
+            const today = new Date();
+            if (today < minDate) {
+                selectedDate = new Date(minDate);
+            } else {
+                selectedDate = new Date(today);
+            }
+            
+            // Initialize calendar
+            renderCalendar(currentCalendarDate);
+            
+            // Set initial date display
+            document.getElementById('report-date').value = formatDate(selectedDate);
+            document.getElementById('stats-date').textContent = formatDate(selectedDate);
+            
+            // Populate branch lists
+            populateBranchList('balmain-branches', branches.balmain, 'Balmain Stores');
+            populateBranchList('norich-branches', branches.norich, 'Norich Sales');
+            populateBranchList('nrm-branches', branches.nrm, 'N.R.M Region');
+            
+            // Populate branch filter
+            const branchFilter = document.getElementById('filter-branch');
+            [...branches.balmain, ...branches.norich, ...branches.nrm].forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch;
+                option.textContent = branch;
+                branchFilter.appendChild(option);
+            });
+            
+            // Populate date filter with dates from November 2025 onwards
+            const filterDateSelector = document.getElementById('filter-date');
+            const dates = generateDateRange();
+            dates.forEach(date => {
+                const filterOption = document.createElement('option');
+                filterOption.value = formatDateForStorage(date);
+                filterOption.textContent = formatDate(date);
+                filterDateSelector.appendChild(filterOption);
+            });
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load data for current date
+            loadDateData();
+            
+            // Load history
+            loadHistory();
+            
+            // Initialize charts
+            initializeCharts();
+        });
+        
+        function generateDateRange() {
+            const dates = [];
+            const today = new Date();
+            const startDate = new Date(2025, 10, 1); // November 1, 2025
+            
+            // Add dates from November 1, 2025 to today + 7 days
+            let currentDate = new Date(startDate);
+            const endDate = new Date();
+            endDate.setDate(today.getDate() + 7);
+            
+            while (currentDate <= endDate) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return dates;
+        }
+        
+        function populateBranchList(listId, branchArray, region) {
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = '';
+            
+            branchArray.forEach(branch => {
+                const listItem = document.createElement('li');
+                listItem.className = 'branch-item';
+                
+                listItem.innerHTML = `
+                    <div class="branch-name">${branch} - ${region}</div>
+                    <div class="branch-checks">
+                        <div class="check-item">
+                            <div class="check-label">Batch Job</div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="${branch}-batchjob" data-type="batchjob" data-branch="${branch}" data-region="${region}">
+                                <label for="${branch}-batchjob">Completed</label>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-label">Backup</div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="${branch}-backup" data-type="backup" data-branch="${branch}" data-region="${region}">
+                                <label for="${branch}-backup">Completed</label>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-label">Data Ports</div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="${branch}-dataports" data-type="dataports" data-branch="${branch}" data-region="${region}">
+                                <label for="${branch}-dataports">Completed</label>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-label">FDMS</div>
+                            <select class="fdms-select" id="${branch}-fdms" data-type="fdms" data-branch="${branch}" data-region="${region}">
+                                <option value="">Select Status</option>
+                                <option value="successful">Successful</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                
+                listElement.appendChild(listItem);
+            });
+        }
+        
+        function setupEventListeners() {
+            // Calendar functionality
+            document.getElementById('report-date').addEventListener('click', function() {
+                document.getElementById('calendar-popup').classList.toggle('active');
+            });
+            
+            document.getElementById('prev-month').addEventListener('click', prevMonth);
+            document.getElementById('next-month').addEventListener('click', nextMonth);
+            
+            // Close calendar when clicking outside
+            document.addEventListener('click', function(event) {
+                const calendarPopup = document.getElementById('calendar-popup');
+                const datePicker = document.getElementById('report-date');
+                if (!calendarPopup.contains(event.target) && !datePicker.contains(event.target)) {
+                    calendarPopup.classList.remove('active');
+                }
+            });
+            
+            // Region selector buttons
+            document.querySelectorAll('.region-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    switchRegion(this.getAttribute('data-region'));
+                });
+            });
+            
+            // Previous date button
+            document.getElementById('prev-date').addEventListener('click', function() {
+                const prevDate = new Date(selectedDate);
+                prevDate.setDate(prevDate.getDate() - 1);
+                
+                // Don't allow dates before November 2025
+                if (prevDate >= minDate) {
+                    selectDate(prevDate);
+                }
+            });
+            
+            // Next date button
+            document.getElementById('next-date').addEventListener('click', function() {
+                const nextDate = new Date(selectedDate);
+                nextDate.setDate(nextDate.getDate() + 1);
+                selectDate(nextDate);
+            });
+            
+            // Checkbox and select changes - silent save without notification
+            document.addEventListener('change', function(e) {
+                if (e.target.type === 'checkbox' || e.target.classList.contains('fdms-select')) {
+                    unsavedChanges = true;
+                    updateStatistics();
+                    updateCharts();
+                    // Auto-save silently without notification
+                    autoSaveSilently();
+                }
+            });
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    const tabId = this.getAttribute('data-tab') + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Load history when switching to history tab
+                    if (this.getAttribute('data-tab') === 'history') {
+                        loadHistory();
+                    }
+                    
+                    // Update charts when switching to insights tab
+                    if (this.getAttribute('data-tab') === 'insights') {
+                        updateCharts();
+                    }
+                });
+            });
+            
+            // Button functionality
+            document.getElementById('save-btn').addEventListener('click', function() {
+                saveCurrentStatus();
+                showSaveConfirmation('Backup status saved successfully!');
+            });
+            
+            document.getElementById('submit-btn').addEventListener('click', function() {
+                saveCurrentStatus();
+                submitDailyReport();
+                showSaveConfirmation('Daily report submitted successfully!');
+            });
+            
+            // Print button
+            document.getElementById('print-btn').addEventListener('click', function() {
+                document.getElementById('print-date').textContent = new Date().toLocaleString();
+                window.print();
+            });
+            
+            // Export button
+            document.getElementById('export-btn').addEventListener('click', function() {
+                exportData();
+            });
+            
+            // Filter functionality
+            document.getElementById('filter-date').addEventListener('change', loadHistory);
+            document.getElementById('filter-branch').addEventListener('change', loadHistory);
+            document.getElementById('filter-batchjob').addEventListener('change', loadHistory);
+            document.getElementById('filter-dataports').addEventListener('change', loadHistory);
+            document.getElementById('filter-fdms').addEventListener('change', loadHistory);
+        }
+        
+        function loadDateData() {
+            const selectedDateStr = formatDateForStorage(selectedDate);
+            
+            // Load saved data for this date
+            const savedData = localStorage.getItem(`backupData-${selectedDateStr}`);
+            
+            // Reset all checkboxes and selects first
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.querySelectorAll('.fdms-select').forEach(select => {
+                select.value = '';
+            });
+            
+            if (savedData) {
+                const statusData = JSON.parse(savedData);
+                
+                // Load checkbox states for all branches
+                Object.keys(statusData).forEach(branch => {
+                    // Batch Job
+                    const batchJobCheckbox = document.getElementById(`${branch}-batchjob`);
+                    if (batchJobCheckbox && statusData[branch].batchjob !== undefined) {
+                        batchJobCheckbox.checked = statusData[branch].batchjob;
+                    }
+                    
+                    // Backup
+                    const backupCheckbox = document.getElementById(`${branch}-backup`);
+                    if (backupCheckbox && statusData[branch].backup !== undefined) {
+                        backupCheckbox.checked = statusData[branch].backup;
+                    }
+                    
+                    // Data Ports
+                    const dataPortsCheckbox = document.getElementById(`${branch}-dataports`);
+                    if (dataPortsCheckbox && statusData[branch].dataports !== undefined) {
+                        dataPortsCheckbox.checked = statusData[branch].dataports;
+                    }
+                    
+                    // FDMS
+                    const fdmsSelect = document.getElementById(`${branch}-fdms`);
+                    if (fdmsSelect && statusData[branch].fdms !== undefined) {
+                        fdmsSelect.value = statusData[branch].fdms;
+                    }
+                });
+            }
+            
+            updateStatistics();
+            updateCharts();
+            unsavedChanges = false;
+        }
+        
+        function autoSaveSilently() {
+            const selectedDateStr = formatDateForStorage(selectedDate);
+            
+            const statusData = {};
+            
+            // Save checkbox states for all branches
+            [...branches.balmain, ...branches.norich, ...branches.nrm].forEach(branch => {
+                statusData[branch] = {};
+                
+                // Batch Job
+                const batchJobCheckbox = document.getElementById(`${branch}-batchjob`);
+                if (batchJobCheckbox) {
+                    statusData[branch].batchjob = batchJobCheckbox.checked;
+                }
+                
+                // Backup
+                const backupCheckbox = document.getElementById(`${branch}-backup`);
+                if (backupCheckbox) {
+                    statusData[branch].backup = backupCheckbox.checked;
+                }
+                
+                // Data Ports
+                const dataPortsCheckbox = document.getElementById(`${branch}-dataports`);
+                if (dataPortsCheckbox) {
+                    statusData[branch].dataports = dataPortsCheckbox.checked;
+                }
+                
+                // FDMS
+                const fdmsSelect = document.getElementById(`${branch}-fdms`);
+                if (fdmsSelect) {
+                    statusData[branch].fdms = fdmsSelect.value;
+                }
+            });
+            
+            // Save to localStorage silently (no notification)
+            localStorage.setItem(`backupData-${selectedDateStr}`, JSON.stringify(statusData));
+        }
+        
+        function updateStatistics() {
+            const totalBranches = branches.balmain.length + branches.norich.length + branches.nrm.length;
+            let completedBatchJobs = 0;
+            let completedBackups = 0;
+            let completedDataPorts = 0;
+            let successfulFdms = 0;
+            
+            let balmainCompleted = 0;
+            let norichCompleted = 0;
+            let nrmCompleted = 0;
+            
+            // Count completed tasks for all branches
+            [...branches.balmain, ...branches.norich, ...branches.nrm].forEach(branch => {
+                const batchJobCheckbox = document.getElementById(`${branch}-batchjob`);
+                if (batchJobCheckbox && batchJobCheckbox.checked) completedBatchJobs++;
+                
+                const backupCheckbox = document.getElementById(`${branch}-backup`);
+                if (backupCheckbox && backupCheckbox.checked) completedBackups++;
+                
+                const dataPortsCheckbox = document.getElementById(`${branch}-dataports`);
+                if (dataPortsCheckbox && dataPortsCheckbox.checked) completedDataPorts++;
+                
+                const fdmsSelect = document.getElementById(`${branch}-fdms`);
+                if (fdmsSelect && fdmsSelect.value === 'successful') successfulFdms++;
+                
+                // Count fully completed branches per region
+                const region = getBranchRegion(branch);
+                if (batchJobCheckbox && batchJobCheckbox.checked &&
+                    backupCheckbox && backupCheckbox.checked &&
+                    dataPortsCheckbox && dataPortsCheckbox.checked &&
+                    fdmsSelect && fdmsSelect.value === 'successful') {
+                    
+                    if (region === 'balmain') balmainCompleted++;
+                    else if (region === 'norich') norichCompleted++;
+                    else if (region === 'nrm') nrmCompleted++;
+                }
+            });
+            
+            // Update statistics display
+            document.getElementById('total-branches').textContent = totalBranches;
+            document.getElementById('completed-batchjobs').textContent = completedBatchJobs;
+            document.getElementById('completed-backups').textContent = completedBackups;
+            document.getElementById('completed-dataports').textContent = completedDataPorts;
+            document.getElementById('successful-fdms').textContent = successfulFdms;
+            
+            // Update region stats
+            document.getElementById('balmain-count').textContent = branches.balmain.length;
+            document.getElementById('balmain-completed').textContent = balmainCompleted;
+            document.getElementById('norich-count').textContent = branches.norich.length;
+            document.getElementById('norich-completed').textContent = norichCompleted;
+            document.getElementById('nrm-count').textContent = branches.nrm.length;
+            document.getElementById('nrm-completed').textContent = nrmCompleted;
+            
+            // Update progress bars
+            document.getElementById('progress-batchjobs').style.width = `${(completedBatchJobs / totalBranches) * 100}%`;
+            document.getElementById('progress-backups').style.width = `${(completedBackups / totalBranches) * 100}%`;
+            document.getElementById('progress-dataports').style.width = `${(completedDataPorts / totalBranches) * 100}%`;
+            document.getElementById('progress-fdms').style.width = `${(successfulFdms / totalBranches) * 100}%`;
+        }
+        
+        function getBranchRegion(branch) {
+            if (branches.balmain.includes(branch)) return 'balmain';
+            if (branches.norich.includes(branch)) return 'norich';
+            if (branches.nrm.includes(branch)) return 'nrm';
+            return '';
+        }
+        
+        function saveCurrentStatus() {
+            autoSaveSilently(); // Uses the same function as auto-save
+            unsavedChanges = false;
+        }
+        
+        function submitDailyReport() {
+            const selectedDateStr = formatDateForStorage(selectedDate);
+            const reportDate = formatDate(selectedDate);
+            
+            // Create report data
+            const reportData = {
+                date: reportDate,
+                dateValue: selectedDateStr,
+                timestamp: new Date().toISOString(),
+                branches: []
+            };
+            
+            // Add all branches to report
+            [...branches.balmain, ...branches.norich, ...branches.nrm].forEach(branch => {
+                const batchJobCheckbox = document.getElementById(`${branch}-batchjob`);
+                const backupCheckbox = document.getElementById(`${branch}-backup`);
+                const dataPortsCheckbox = document.getElementById(`${branch}-dataports`);
+                const fdmsSelect = document.getElementById(`${branch}-fdms`);
+                const region = getBranchRegion(branch);
+                
+                reportData.branches.push({
+                    name: branch,
+                    region: region === 'balmain' ? 'Balmain Stores' : 
+                           region === 'norich' ? 'Norich Sales' : 'N.R.M Region',
+                    batchjob: batchJobCheckbox ? batchJobCheckbox.checked : false,
+                    backup: backupCheckbox ? backupCheckbox.checked : false,
+                    dataports: dataPortsCheckbox ? dataPortsCheckbox.checked : false,
+                    fdms: fdmsSelect ? fdmsSelect.value : ''
+                });
+            });
+            
+            // Save report to history
+            saveToHistory(reportData);
+        }
+        
+        function saveToHistory(reportData) {
+            // Get existing history or initialize empty array
+            let history = JSON.parse(localStorage.getItem('backupHistory')) || [];
+            
+            // Check if report for this date already exists
+            const existingIndex = history.findIndex(report => report.dateValue === reportData.dateValue);
+            
+            if (existingIndex !== -1) {
+                // Replace existing report
+                history[existingIndex] = reportData;
+            } else {
+                // Add new report to history
+                history.unshift(reportData);
+            }
+            
+            // Keep only the last 100 reports
+            if (history.length > 100) {
+                history = history.slice(0, 100);
+            }
+            
+            // Save updated history
+            localStorage.setItem('backupHistory', JSON.stringify(history));
+            
+            // Refresh history display
+            loadHistory();
+        }
+        
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('backupHistory')) || [];
+            const tableBody = document.getElementById('history-table-body');
+            
+            // Get filter values
+            const dateFilter = document.getElementById('filter-date').value;
+            const branchFilter = document.getElementById('filter-branch').value;
+            const batchjobFilter = document.getElementById('filter-batchjob').value;
+            const dataportsFilter = document.getElementById('filter-dataports').value;
+            const fdmsFilter = document.getElementById('filter-fdms').value;
+            
+            // Clear existing rows
+            tableBody.innerHTML = '';
+            
+            // Add history rows with filtering
+            history.forEach(report => {
+                // Apply date filter
+                if (dateFilter && report.dateValue !== dateFilter) {
+                    return;
+                }
+                
+                report.branches.forEach(branch => {
+                    // Apply branch filter
+                    if (branchFilter && branch.name !== branchFilter) {
+                        return;
+                    }
+                    
+                    // Apply batchjob filter
+                    if (batchjobFilter) {
+                        if (batchjobFilter === 'completed' && !branch.batchjob) return;
+                        if (batchjobFilter === 'pending' && branch.batchjob) return;
+                    }
+                    
+                    // Apply dataports filter
+                    if (dataportsFilter) {
+                        if (dataportsFilter === 'completed' && !branch.dataports) return;
+                        if (dataportsFilter === 'pending' && branch.dataports) return;
+                    }
+                    
+                    // Apply fdms filter
+                    if (fdmsFilter) {
+                        if (fdmsFilter === 'successful' && branch.fdms !== 'successful') return;
+                        if (fdmsFilter === 'failed' && branch.fdms !== 'failed') return;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${report.date}</td>
+                        <td>${branch.name}</td>
+                        <td>${branch.region}</td>
+                        <td>
+                            <span class="status-badge ${branch.batchjob ? 'status-completed' : 'status-pending'}">
+                                ${branch.batchjob ? 'Completed' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${branch.backup ? 'status-completed' : 'status-pending'}">
+                                ${branch.backup ? 'Completed' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${branch.dataports ? 'status-completed' : 'status-pending'}">
+                                ${branch.dataports ? 'Completed' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${branch.fdms === 'successful' ? 'status-completed' : branch.fdms === 'failed' ? 'fdms-failed' : 'status-pending'}">
+                                ${branch.fdms || 'Not Set'}
+                            </span>
+                        </td>
+                        <td>System Admin</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            });
+            
+            // If no history, show message
+            if (tableBody.children.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" style="text-align: center;">No backup history available for the selected filters</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function exportData() {
+            const history = JSON.parse(localStorage.getItem('backupHistory')) || [];
+            const dataStr = JSON.stringify(history, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `nrichards-backup-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showSaveConfirmation('Data exported successfully!');
+        }
+        
+        function initializeCharts() {
+            // Regional Completion Chart
+            const regionalCtx = document.getElementById('regionalChart').getContext('2d');
+            regionalChart = new Chart(regionalCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Balmain Stores', 'Norich Sales', 'N.R.M Region'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(155, 89, 182, 0.8)',
+                            'rgba(231, 76, 60, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(52, 152, 219)',
+                            'rgb(155, 89, 182)',
+                            'rgb(231, 76, 60)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Completion by Region'
+                        }
+                    }
+                }
+            });
+            
+            // Task Completion Chart
+            const taskCtx = document.getElementById('taskChart').getContext('2d');
+            taskChart = new Chart(taskCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Batch Jobs', 'Backups', 'Data Ports', 'FDMS'],
+                    datasets: [{
+                        label: 'Completed',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(155, 89, 182, 0.7)',
+                            'rgba(241, 196, 15, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(52, 152, 219)',
+                            'rgb(46, 204, 113)',
+                            'rgb(155, 89, 182)',
+                            'rgb(241, 196, 15)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 41,
+                            title: {
+                                display: true,
+                                text: 'Number of Branches'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Task Completion Overview'
+                        }
+                    }
+                }
+            });
+            
+            // Performance Trends Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Batch Jobs',
+                            data: [65, 59, 80, 81, 56, 55, 40],
+                            borderColor: 'rgb(52, 152, 219)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Backups',
+                            data: [28, 48, 40, 19, 86, 27, 90],
+                            borderColor: 'rgb(46, 204, 113)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'FDMS',
+                            data: [45, 25, 60, 32, 70, 50, 75],
+                            borderColor: 'rgb(241, 196, 15)',
+                            backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Completion Rate (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Weekly Performance Trends'
+                        }
+                    }
+                }
+            });
+            
+            // Regional Comparison Chart
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            comparisonChart = new Chart(comparisonCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Batch Jobs', 'Backups', 'Data Ports', 'FDMS', 'Response Time'],
+                    datasets: [
+                        {
+                            label: 'Balmain Stores',
+                            data: [85, 75, 90, 80, 70],
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: 'rgb(52, 152, 219)',
+                            pointBackgroundColor: 'rgb(52, 152, 219)'
+                        },
+                        {
+                            label: 'Norich Sales',
+                            data: [70, 85, 75, 65, 80],
+                            backgroundColor: 'rgba(155, 89, 182, 0.2)',
+                            borderColor: 'rgb(155, 89, 182)',
+                            pointBackgroundColor: 'rgb(155, 89, 182)'
+                        },
+                        {
+                            label: 'N.R.M Region',
+                            data: [60, 70, 80, 75, 65],
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            borderColor: 'rgb(231, 76, 60)',
+                            pointBackgroundColor: 'rgb(231, 76, 60)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Regional Performance Comparison'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            // Get current data for charts
+            const totalBranches = branches.balmain.length + branches.norich.length + branches.nrm.length;
+            
+            let balmainCompleted = 0;
+            let norichCompleted = 0;
+            let nrmCompleted = 0;
+            
+            let completedBatchJobs = 0;
+            let completedBackups = 0;
+            let completedDataPorts = 0;
+            let successfulFdms = 0;
+            
+            // Count completed tasks for all branches
+            [...branches.balmain, ...branches.norich, ...branches.nrm].forEach(branch => {
+                const batchJobCheckbox = document.getElementById(`${branch}-batchjob`);
+                if (batchJobCheckbox && batchJobCheckbox.checked) completedBatchJobs++;
+                
+                const backupCheckbox = document.getElementById(`${branch}-backup`);
+                if (backupCheckbox && backupCheckbox.checked) completedBackups++;
+                
+                const dataPortsCheckbox = document.getElementById(`${branch}-dataports`);
+                if (dataPortsCheckbox && dataPortsCheckbox.checked) completedDataPorts++;
+                
+                const fdmsSelect = document.getElementById(`${branch}-fdms`);
+                if (fdmsSelect && fdmsSelect.value === 'successful') successfulFdms++;
+                
+                // Count fully completed branches per region
+                const region = getBranchRegion(branch);
+                if (batchJobCheckbox && batchJobCheckbox.checked &&
+                    backupCheckbox && backupCheckbox.checked &&
+                    dataPortsCheckbox && dataPortsCheckbox.checked &&
+                    fdmsSelect && fdmsSelect.value === 'successful') {
+                    
+                    if (region === 'balmain') balmainCompleted++;
+                    else if (region === 'norich') norichCompleted++;
+                    else if (region === 'nrm') nrmCompleted++;
+                }
+            });
+            
+            // Update regional chart
+            regionalChart.data.datasets[0].data = [balmainCompleted, norichCompleted, nrmCompleted];
+            regionalChart.update();
+            
+            // Update task chart
+            taskChart.data.datasets[0].data = [completedBatchJobs, completedBackups, completedDataPorts, successfulFdms];
+            taskChart.update();
+        }
+    </script>
+</body>
+</html>

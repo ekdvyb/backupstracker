@@ -1003,7 +1003,7 @@
                         <h2>Balmain Stores</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="balmain-count">6</span></div>
-                            <div class="stat-pill">All Processes Done: <span id="balmain-completed">0</span></div>
+                            <div class="stat-pill">Done: <span id="balmain-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -1018,7 +1018,7 @@
                         <h2>Norich Sales</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="norich-count">6</span></div>
-                            <div class="stat-pill">All Processes Done: <span id="norich-completed">0</span></div>
+                            <div class="stat-pill">Done: <span id="norich-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -1033,15 +1033,12 @@
                         <h2>N.R.M Region</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="nrm-count">17</span></div>
-                            <div class="stat-pill">All Processes Done: <span id="nrm-completed">0</span></div>
+                            <div class="stat-pill">Done: <span id="nrm-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="search-container">
                             <input type="text" class="search-input" id="nrm-search" placeholder="Search for a branch...">
-                            <button class="search-btn" id="nrm-search-btn">
-                                <i class="fas fa-search"></i> Search
-                            </button>
                         </div>
                         <ul class="branch-list" id="nrm-branches">
                             <!-- Branches will be populated by JavaScript -->
@@ -1118,7 +1115,7 @@
                     <label class="filter-label">Batch Job</label>
                     <select class="filter-select" id="filter-batchjob">
                         <option value="">All</option>
-                        <option value="completed">All Processes Done</option>
+                        <option value="completed">Done</option>
                         <option value="pending">Pending</option>
                     </select>
                 </div>
@@ -1279,14 +1276,14 @@
             document.getElementById('nrm-card').style.display = region === 'nrm' ? 'block' : 'none';
         }
         
-        // Search function for N.R.M branches
+        // Search function for N.R.M branches - real-time as you type
         function searchNRMBranches() {
             const searchTerm = document.getElementById('nrm-search').value.toLowerCase();
             const branchItems = document.querySelectorAll('#nrm-branches .branch-item');
             
             branchItems.forEach(item => {
                 const branchName = item.querySelector('.branch-name').textContent.toLowerCase();
-                if (branchName.includes(searchTerm)) {
+                if (searchTerm === '' || branchName.includes(searchTerm)) {
                     item.style.display = 'block';
                 } else {
                     item.style.display = 'none';
@@ -1462,21 +1459,21 @@
                             <div class="check-label">Batch Job</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-batchjob" data-type="batchjob" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-batchjob">All Processes Done</label>
+                                <label for="${branch}-batchjob">Done</label>
                             </div>
                         </div>
                         <div class="check-item">
                             <div class="check-label">Backup</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-backup" data-type="backup" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-backup">All Processes Done</label>
+                                <label for="${branch}-backup">Done</label>
                             </div>
                         </div>
                         <div class="check-item">
                             <div class="check-label">Data Ports</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-dataports" data-type="dataports" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-dataports">All Processes Done</label>
+                                <label for="${branch}-dataports">Done</label>
                             </div>
                         </div>
                         <div class="check-item">
@@ -1519,13 +1516,8 @@
                 });
             });
             
-            // Search functionality for N.R.M region
-            document.getElementById('nrm-search-btn').addEventListener('click', searchNRMBranches);
-            document.getElementById('nrm-search').addEventListener('keyup', function(event) {
-                if (event.key === 'Enter') {
-                    searchNRMBranches();
-                }
-            });
+            // Search functionality for N.R.M region - real-time as you type
+            document.getElementById('nrm-search').addEventListener('input', searchNRMBranches);
             
             // Previous date button
             document.getElementById('prev-date').addEventListener('click', function() {
@@ -1901,17 +1893,17 @@
                         <td>${branch.region}</td>
                         <td>
                             <span class="status-badge ${branch.batchjob ? 'status-completed' : 'status-pending'}">
-                                ${branch.batchjob ? 'All Processes Done' : 'Pending'}
+                                ${branch.batchjob ? 'Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
                             <span class="status-badge ${branch.backup ? 'status-completed' : 'status-pending'}">
-                                ${branch.backup ? 'All Processes Done' : 'Pending'}
+                                ${branch.backup ? 'Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
                             <span class="status-badge ${branch.dataports ? 'status-completed' : 'status-pending'}">
-                                ${branch.dataports ? 'All Processes Done' : 'Pending'}
+                                ${branch.dataports ? 'Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
@@ -2002,7 +1994,7 @@
                 data: {
                     labels: ['Batch Jobs', 'Backups', 'Data Ports', 'FDMS'],
                     datasets: [{
-                        label: 'All Processes Done',
+                        label: 'Done',
                         data: [0, 0, 0, 0],
                         backgroundColor: [
                             'rgba(52, 152, 219, 0.7)',

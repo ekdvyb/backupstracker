@@ -1219,6 +1219,9 @@
                 <button class="btn btn-success" id="submit-btn">
                     <i class="fas fa-paper-plane"></i> Submit Daily Report
                 </button>
+                <button class="btn btn-warning" id="clear-data-btn">
+                    <i class="fas fa-trash-alt"></i> Clear Data
+                </button>
             </div>
         </div>
         
@@ -1517,27 +1520,32 @@
             
             // Filter branches based on search term
             let matchingBranches = [];
-            
+
             // Search in Balmain branches
             branches.balmain.forEach(branch => {
                 if (branch.toLowerCase().includes(searchTerm)) {
                     matchingBranches.push({ name: branch, region: 'balmain' });
                 }
             });
-            
+
             // Search in Norich branches
             branches.norich.forEach(branch => {
                 if (branch.toLowerCase().includes(searchTerm)) {
                     matchingBranches.push({ name: branch, region: 'norich' });
                 }
             });
-            
+
             // Search in N.R.M branches
             branches.nrm.forEach(branch => {
                 if (branch.toLowerCase().includes(searchTerm)) {
                     matchingBranches.push({ name: branch, region: 'nrm' });
                 }
             });
+
+            // Respect activeRegion filter: if a region is selected, only show its branches
+            if (activeRegion && activeRegion !== 'all') {
+                matchingBranches = matchingBranches.filter(b => b.region === activeRegion);
+            }
             
             // Display results
             if (matchingBranches.length === 0) {
@@ -1565,34 +1573,28 @@
             // Clear previous results
             resultsContainer.innerHTML = '';
             
-            // Add all branches
+            // Add branches depending on the currently active region
             let allBranches = [];
-            
-            // Add Balmain branches
-            branches.balmain.forEach(branch => {
-                allBranches.push({ name: branch, region: 'balmain' });
-            });
-            
-            // Add Norich branches
-            branches.norich.forEach(branch => {
-                allBranches.push({ name: branch, region: 'norich' });
-            });
-            
-            // Add N.R.M branches
-            branches.nrm.forEach(branch => {
-                allBranches.push({ name: branch, region: 'nrm' });
-            });
-            
-            // Sort branches by name
+            if (!activeRegion || activeRegion === 'all') {
+                branches.balmain.forEach(branch => allBranches.push({ name: branch, region: 'balmain' }));
+                branches.norich.forEach(branch => allBranches.push({ name: branch, region: 'norich' }));
+                branches.nrm.forEach(branch => allBranches.push({ name: branch, region: 'nrm' }));
+            } else if (activeRegion === 'balmain') {
+                branches.balmain.forEach(branch => allBranches.push({ name: branch, region: 'balmain' }));
+            } else if (activeRegion === 'norich') {
+                branches.norich.forEach(branch => allBranches.push({ name: branch, region: 'norich' }));
+            } else if (activeRegion === 'nrm') {
+                branches.nrm.forEach(branch => allBranches.push({ name: branch, region: 'nrm' }));
+            }
+
+            // Sort branches by name and display
             allBranches.sort((a, b) => a.name.localeCompare(b.name));
-            
-            // Display all branches
             allBranches.forEach(branch => {
                 const resultItem = createBranchResultItem(branch.name, branch.region);
                 resultsContainer.appendChild(resultItem);
             });
-            
-            resultsCount.textContent = `Showing all ${allBranches.length} branches`;
+
+            resultsCount.textContent = `Showing ${allBranches.length} branches`;
         }
         
         // NEW: Create a branch result item for the search interface
@@ -1749,10 +1751,10 @@
             document.getElementById('report-date').value = formatDate(selectedDate);
             document.getElementById('stats-date').textContent = formatDate(selectedDate);
             
-            // Set correct branch counts
-            document.getElementById('total-branches').textContent = branchCounts.total;
+            // Set correct branch counts (reflect active region)
+            document.getElementById('total-branches').textContent = branchCounts[activeRegion] || branchCounts.total;
             
-            // NEW: Populate search results with all branches
+            // NEW: Populate search results with branches for the active region
             displayAllBranches();
             
             // Populate branch filter
@@ -1776,6 +1778,15 @@
             
             // Set up event listeners
             setupEventListeners();
+
+            // Ensure history region filter matches activeRegion at start
+            const regionSelectInit = document.getElementById('filter-region');
+            if (regionSelectInit) {
+                if (activeRegion === 'balmain') regionSelectInit.value = 'Balmain Stores';
+                else if (activeRegion === 'norich') regionSelectInit.value = 'Norich Sales';
+                else if (activeRegion === 'nrm') regionSelectInit.value = 'N.R.M Region';
+                else regionSelectInit.value = '';
+            }
             
             // Load data for current date
             loadDateData();
@@ -1828,12 +1839,33 @@
                 btn.addEventListener('click', function() {
                     const region = this.getAttribute('data-region');
                     activeRegion = region;
-                    
+
                     // Update active button
-                    document.querySelectorAll('.region-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+                    document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
+
+                    // Update total branches display to reflect selected region
+                    if (activeRegion === 'balmain') document.getElementById('total-branches').textContent = branchCounts.balmain;
+                    else if (activeRegion === 'norich') document.getElementById('total-branches').textContent = branchCounts.norich;
+                    else if (activeRegion === 'nrm') document.getElementById('total-branches').textContent = branchCounts.nrm;
+                    else document.getElementById('total-branches').textContent = branchCounts.total;
+
+                    // Update the history region filter select to match active region (use display names)
+                    const regionSelect = document.getElementById('filter-region');
+                    if (regionSelect) {
+                        if (activeRegion === 'balmain') regionSelect.value = 'Balmain Stores';
+                        else if (activeRegion === 'norich') regionSelect.value = 'Norich Sales';
+                        else if (activeRegion === 'nrm') regionSelect.value = 'N.R.M Region';
+                        else regionSelect.value = '';
+                    }
+
+                    // Refresh branch listing and data for the selected region
+                    document.getElementById('branch-search').value = '';
+                    displayAllBranches();
+                    loadDateData();
+                    updateStatistics();
+                    updateCharts();
+                    loadHistory();
                 });
             });
             
@@ -1935,6 +1967,15 @@
             document.getElementById('export-btn').addEventListener('click', function() {
                 exportData();
             });
+
+            // Clear data button - removes all backupData-* entries and backupHistory
+            const clearBtn = document.getElementById('clear-data-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    if (!confirm('Clear ALL recorded backup data and history? This cannot be undone.')) return;
+                    clearData();
+                });
+            }
             
             // Filter functionality
             document.getElementById('filter-date').addEventListener('change', loadHistory);
@@ -2252,6 +2293,32 @@
             URL.revokeObjectURL(url);
             
             showSaveConfirmation('Data exported successfully!');
+        }
+
+        // Clear all stored data (backupData-YYYY-MM-DD entries and backupHistory)
+        function clearData() {
+            // Remove backupData-* keys
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('backupData-')) keysToRemove.push(key);
+            }
+
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Remove history
+            localStorage.removeItem('backupHistory');
+
+            // Reset UI
+            displayAllBranches();
+            // Reset counts and stats
+            document.getElementById('total-branches').textContent = branchCounts[activeRegion] || branchCounts.total;
+            loadDateData();
+            loadHistory();
+            updateStatistics();
+            updateCharts();
+
+            showSaveConfirmation('All recorded data cleared. You can start afresh.');
         }
         
         function initializeCharts() {

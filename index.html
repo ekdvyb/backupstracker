@@ -479,6 +479,7 @@
             background: white;
             padding: 25px;
             border-radius: 10px;
+            text-align: center;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s;
         }
@@ -712,6 +713,60 @@
             gap: 10px;
         }
         
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .search-btn {
+            padding: 12px 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .summary-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
         @media (max-width: 1400px) {
             .filters-container {
                 grid-template-columns: repeat(3, 1fr);
@@ -724,6 +779,10 @@
             .charts-section {
                 grid-template-columns: 1fr;
             }
+            
+            .history-summary {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
         
         @media (max-width: 992px) {
@@ -732,6 +791,10 @@
             }
             
             .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .history-summary {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -776,6 +839,10 @@
             }
             
             .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .history-summary {
                 grid-template-columns: 1fr;
             }
         }
@@ -899,7 +966,7 @@
                 <div class="card-body">
                     <div class="stats-container">
                         <div class="stat-box">
-                            <div class="stat-label">Batch Jobs Completed</div>
+                            <div class="stat-label">Batch Jobs Done</div>
                             <div class="stat-value" id="completed-batchjobs">0</div>
                             <div class="progress-bar">
                                 <div class="progress-fill" id="progress-batchjobs" style="width: 0%"></div>
@@ -936,7 +1003,7 @@
                         <h2>Balmain Stores</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="balmain-count">6</span></div>
-                            <div class="stat-pill">Completed: <span id="balmain-completed">0</span></div>
+                            <div class="stat-pill">All Processes Done: <span id="balmain-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -951,7 +1018,7 @@
                         <h2>Norich Sales</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="norich-count">6</span></div>
-                            <div class="stat-pill">Completed: <span id="norich-completed">0</span></div>
+                            <div class="stat-pill">All Processes Done: <span id="norich-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -966,10 +1033,16 @@
                         <h2>N.R.M Region</h2>
                         <div class="region-stats">
                             <div class="stat-pill">Branches: <span id="nrm-count">17</span></div>
-                            <div class="stat-pill">Completed: <span id="nrm-completed">0</span></div>
+                            <div class="stat-pill">All Processes Done: <span id="nrm-completed">0</span></div>
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="search-container">
+                            <input type="text" class="search-input" id="nrm-search" placeholder="Search for a branch...">
+                            <button class="search-btn" id="nrm-search-btn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
                         <ul class="branch-list" id="nrm-branches">
                             <!-- Branches will be populated by JavaScript -->
                         </ul>
@@ -1026,6 +1099,15 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label class="filter-label">Region</label>
+                    <select class="filter-select" id="filter-region">
+                        <option value="">All Regions</option>
+                        <option value="Balmain Stores">Balmain Stores</option>
+                        <option value="Norich Sales">Norich Sales</option>
+                        <option value="N.R.M Region">N.R.M Region</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label class="filter-label">Branch</label>
                     <select class="filter-select" id="filter-branch">
                         <option value="">All Branches</option>
@@ -1036,15 +1118,7 @@
                     <label class="filter-label">Batch Job</label>
                     <select class="filter-select" id="filter-batchjob">
                         <option value="">All</option>
-                        <option value="completed">Completed</option>
-                        <option value="pending">Pending</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Data Ports</label>
-                    <select class="filter-select" id="filter-dataports">
-                        <option value="">All</option>
-                        <option value="completed">Completed</option>
+                        <option value="completed">All Processes Done</option>
                         <option value="pending">Pending</option>
                     </select>
                 </div>
@@ -1055,6 +1129,29 @@
                         <option value="successful">Successful</option>
                         <option value="failed">Failed</option>
                     </select>
+                </div>
+            </div>
+            
+            <div class="history-summary" id="history-summary">
+                <div class="summary-box">
+                    <div class="summary-label">Total Branches</div>
+                    <div class="summary-value" id="summary-total">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Batch Jobs Done</div>
+                    <div class="summary-value" id="summary-batchjobs">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Backups Done</div>
+                    <div class="summary-value" id="summary-backups">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Data Ports Done</div>
+                    <div class="summary-value" id="summary-dataports">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">FDMS Successful</div>
+                    <div class="summary-value" id="summary-fdms">0</div>
                 </div>
             </div>
             
@@ -1111,7 +1208,7 @@
     <script>
         // Branch data with all regions
         const branches = {
-            balmain: ["Gweru", "Graniteside", "Kadoma", "Chivhu", "Gokwe", "Kwekwe"],
+            balmain: ["Gweru", "Kwekwe", "Kadoma", "Chivhu", "Gokwe", "Kwekwe"],
             norich: ["Karoi", "Chinhoyi", "Bulawayo", "Bindura", "Rusape", "Marondera"],
             nrm: ["Chivi", "Hurudza", "Masvingo Wholesale", "Chiredzi Wholesale", "Chiredzi Hardware", 
                   "Nyika", "Beitbridge", "Checheche", "Mpandawana", "Jerera", "Chiredzi CC", 
@@ -1180,6 +1277,21 @@
             document.getElementById('balmain-card').style.display = region === 'balmain' ? 'block' : 'none';
             document.getElementById('norich-card').style.display = region === 'norich' ? 'block' : 'none';
             document.getElementById('nrm-card').style.display = region === 'nrm' ? 'block' : 'none';
+        }
+        
+        // Search function for N.R.M branches
+        function searchNRMBranches() {
+            const searchTerm = document.getElementById('nrm-search').value.toLowerCase();
+            const branchItems = document.querySelectorAll('#nrm-branches .branch-item');
+            
+            branchItems.forEach(item => {
+                const branchName = item.querySelector('.branch-name').textContent.toLowerCase();
+                if (branchName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
         
         // Calendar functions
@@ -1340,28 +1452,31 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'branch-item';
                 
+                // For N.R.M region, don't include "N.R.M Region" in branch name
+                const displayName = region === 'N.R.M Region' ? branch : `${branch} - ${region}`;
+                
                 listItem.innerHTML = `
-                    <div class="branch-name">${branch} - ${region}</div>
+                    <div class="branch-name">${displayName}</div>
                     <div class="branch-checks">
                         <div class="check-item">
                             <div class="check-label">Batch Job</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-batchjob" data-type="batchjob" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-batchjob">Completed</label>
+                                <label for="${branch}-batchjob">All Processes Done</label>
                             </div>
                         </div>
                         <div class="check-item">
                             <div class="check-label">Backup</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-backup" data-type="backup" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-backup">Completed</label>
+                                <label for="${branch}-backup">All Processes Done</label>
                             </div>
                         </div>
                         <div class="check-item">
                             <div class="check-label">Data Ports</div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="${branch}-dataports" data-type="dataports" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-dataports">Completed</label>
+                                <label for="${branch}-dataports">All Processes Done</label>
                             </div>
                         </div>
                         <div class="check-item">
@@ -1402,6 +1517,14 @@
                 btn.addEventListener('click', function() {
                     switchRegion(this.getAttribute('data-region'));
                 });
+            });
+            
+            // Search functionality for N.R.M region
+            document.getElementById('nrm-search-btn').addEventListener('click', searchNRMBranches);
+            document.getElementById('nrm-search').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    searchNRMBranches();
+                }
             });
             
             // Previous date button
@@ -1484,9 +1607,9 @@
             
             // Filter functionality
             document.getElementById('filter-date').addEventListener('change', loadHistory);
+            document.getElementById('filter-region').addEventListener('change', loadHistory);
             document.getElementById('filter-branch').addEventListener('change', loadHistory);
             document.getElementById('filter-batchjob').addEventListener('change', loadHistory);
-            document.getElementById('filter-dataports').addEventListener('change', loadHistory);
             document.getElementById('filter-fdms').addEventListener('change', loadHistory);
         }
         
@@ -1718,13 +1841,20 @@
             
             // Get filter values
             const dateFilter = document.getElementById('filter-date').value;
+            const regionFilter = document.getElementById('filter-region').value;
             const branchFilter = document.getElementById('filter-branch').value;
             const batchjobFilter = document.getElementById('filter-batchjob').value;
-            const dataportsFilter = document.getElementById('filter-dataports').value;
             const fdmsFilter = document.getElementById('filter-fdms').value;
             
             // Clear existing rows
             tableBody.innerHTML = '';
+            
+            // Initialize summary counters
+            let summaryTotal = 0;
+            let summaryBatchjobs = 0;
+            let summaryBackups = 0;
+            let summaryDataports = 0;
+            let summaryFdms = 0;
             
             // Add history rows with filtering
             history.forEach(report => {
@@ -1734,6 +1864,11 @@
                 }
                 
                 report.branches.forEach(branch => {
+                    // Apply region filter
+                    if (regionFilter && branch.region !== regionFilter) {
+                        return;
+                    }
+                    
                     // Apply branch filter
                     if (branchFilter && branch.name !== branchFilter) {
                         return;
@@ -1745,17 +1880,18 @@
                         if (batchjobFilter === 'pending' && branch.batchjob) return;
                     }
                     
-                    // Apply dataports filter
-                    if (dataportsFilter) {
-                        if (dataportsFilter === 'completed' && !branch.dataports) return;
-                        if (dataportsFilter === 'pending' && branch.dataports) return;
-                    }
-                    
                     // Apply fdms filter
                     if (fdmsFilter) {
                         if (fdmsFilter === 'successful' && branch.fdms !== 'successful') return;
                         if (fdmsFilter === 'failed' && branch.fdms !== 'failed') return;
                     }
+                    
+                    // Update summary counters
+                    summaryTotal++;
+                    if (branch.batchjob) summaryBatchjobs++;
+                    if (branch.backup) summaryBackups++;
+                    if (branch.dataports) summaryDataports++;
+                    if (branch.fdms === 'successful') summaryFdms++;
                     
                     const row = document.createElement('tr');
                     
@@ -1765,17 +1901,17 @@
                         <td>${branch.region}</td>
                         <td>
                             <span class="status-badge ${branch.batchjob ? 'status-completed' : 'status-pending'}">
-                                ${branch.batchjob ? 'Completed' : 'Pending'}
+                                ${branch.batchjob ? 'All Processes Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
                             <span class="status-badge ${branch.backup ? 'status-completed' : 'status-pending'}">
-                                ${branch.backup ? 'Completed' : 'Pending'}
+                                ${branch.backup ? 'All Processes Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
                             <span class="status-badge ${branch.dataports ? 'status-completed' : 'status-pending'}">
-                                ${branch.dataports ? 'Completed' : 'Pending'}
+                                ${branch.dataports ? 'All Processes Done' : 'Pending'}
                             </span>
                         </td>
                         <td>
@@ -1789,6 +1925,13 @@
                     tableBody.appendChild(row);
                 });
             });
+            
+            // Update history summary
+            document.getElementById('summary-total').textContent = summaryTotal;
+            document.getElementById('summary-batchjobs').textContent = summaryBatchjobs;
+            document.getElementById('summary-backups').textContent = summaryBackups;
+            document.getElementById('summary-dataports').textContent = summaryDataports;
+            document.getElementById('summary-fdms').textContent = summaryFdms;
             
             // If no history, show message
             if (tableBody.children.length === 0) {
@@ -1859,7 +2002,7 @@
                 data: {
                     labels: ['Batch Jobs', 'Backups', 'Data Ports', 'FDMS'],
                     datasets: [{
-                        label: 'Completed',
+                        label: 'All Processes Done',
                         data: [0, 0, 0, 0],
                         backgroundColor: [
                             'rgba(52, 152, 219, 0.7)',

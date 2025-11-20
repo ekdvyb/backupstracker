@@ -767,6 +767,84 @@
             font-weight: 500;
         }
         
+        /* NEW STYLES FOR SEARCH INTERFACE */
+        .search-interface {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+        
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .search-header h2 {
+            font-size: 1.4rem;
+            color: var(--dark);
+        }
+        
+        .search-results-count {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .search-results {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .search-result-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .branch-region {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .region-balmain {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--balmain);
+        }
+        
+        .region-norich {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: var(--norich);
+        }
+        
+        .region-nrm {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--nrm);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+        }
+        
         @media (max-width: 1400px) {
             .filters-container {
                 grid-template-columns: repeat(3, 1fr);
@@ -997,54 +1075,27 @@
                 </div>
             </div>
             
-            <div class="dashboard">
-                <div class="card" id="balmain-card">
-                    <div class="card-header balmain-header">
-                        <h2>Balmain Stores</h2>
-                        <div class="region-stats">
-                            <div class="stat-pill">Branches: <span id="balmain-count">6</span></div>
-                            <div class="stat-pill">Done: <span id="balmain-completed">0</span></div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="branch-list" id="balmain-branches">
-                            <!-- Branches will be populated by JavaScript -->
-                        </ul>
-                    </div>
+            <!-- NEW SEARCH INTERFACE -->
+            <div class="search-interface">
+                <div class="search-header">
+                    <h2>Search and Record Branch Status</h2>
+                    <div class="search-results-count" id="search-results-count">Showing all branches</div>
                 </div>
                 
-                <div class="card" id="norich-card" style="display: none;">
-                    <div class="card-header norich-header">
-                        <h2>Norich Sales</h2>
-                        <div class="region-stats">
-                            <div class="stat-pill">Branches: <span id="norich-count">6</span></div>
-                            <div class="stat-pill">Done: <span id="norich-completed">0</span></div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="branch-list" id="norich-branches">
-                            <!-- Branches will be populated by JavaScript -->
-                        </ul>
-                    </div>
+                <div class="search-container">
+                    <input type="text" class="search-input" id="branch-search" placeholder="Search for a branch...">
+                    <button class="search-btn" id="clear-search">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
                 </div>
                 
-                <div class="card" id="nrm-card" style="display: none;">
-                    <div class="card-header nrm-header">
-                        <h2>N.R.M Region</h2>
-                        <div class="region-stats">
-                            <div class="stat-pill">Branches: <span id="nrm-count">17</span></div>
-                            <div class="stat-pill">Done: <span id="nrm-completed">0</span></div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="search-container">
-                            <input type="text" class="search-input" id="nrm-search" placeholder="Search for a branch...">
-                        </div>
-                        <ul class="branch-list" id="nrm-branches">
-                            <!-- Branches will be populated by JavaScript -->
-                        </ul>
-                    </div>
+                <div class="search-results" id="search-results">
+                    <!-- Search results will be populated by JavaScript -->
                 </div>
+            </div>
+            
+            <div class="dashboard" style="display: none;">
+                <!-- Old region cards are hidden now -->
             </div>
             
             <div class="action-buttons">
@@ -1205,7 +1256,7 @@
     <script>
         // Branch data with all regions
         const branches = {
-            balmain: ["Gweru", "Graniteside", "Kadoma", "Chivhu", "Gokwe", "Kwekwe"],
+            balmain: ["Gweru", "Kwekwe", "Kadoma", "Chivhu", "Gokwe", "Kwekwe"],
             norich: ["Karoi", "Chinhoyi", "Bulawayo", "Bindura", "Rusape", "Marondera"],
             nrm: ["Chivi", "Hurudza", "Masvingo Wholesale", "Chiredzi Wholesale", "Chiredzi Hardware", 
                   "Nyika", "Beitbridge", "Checheche", "Mpandawana", "Jerera", "Chiredzi CC", 
@@ -1276,19 +1327,159 @@
             document.getElementById('nrm-card').style.display = region === 'nrm' ? 'block' : 'none';
         }
         
-        // Search function for N.R.M branches - real-time as you type
-        function searchNRMBranches() {
-            const searchTerm = document.getElementById('nrm-search').value.toLowerCase();
-            const branchItems = document.querySelectorAll('#nrm-branches .branch-item');
+        // NEW: Search function for all branches - real-time as you type
+        function searchBranches() {
+            const searchTerm = document.getElementById('branch-search').value.toLowerCase();
+            const resultsContainer = document.getElementById('search-results');
+            const resultsCount = document.getElementById('search-results-count');
             
-            branchItems.forEach(item => {
-                const branchName = item.querySelector('.branch-name').textContent.toLowerCase();
-                if (searchTerm === '' || branchName.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+            
+            // If search is empty, show all branches
+            if (searchTerm === '') {
+                displayAllBranches();
+                resultsCount.textContent = 'Showing all branches';
+                return;
+            }
+            
+            // Filter branches based on search term
+            let matchingBranches = [];
+            
+            // Search in Balmain branches
+            branches.balmain.forEach(branch => {
+                if (branch.toLowerCase().includes(searchTerm)) {
+                    matchingBranches.push({ name: branch, region: 'balmain' });
                 }
             });
+            
+            // Search in Norich branches
+            branches.norich.forEach(branch => {
+                if (branch.toLowerCase().includes(searchTerm)) {
+                    matchingBranches.push({ name: branch, region: 'norich' });
+                }
+            });
+            
+            // Search in N.R.M branches
+            branches.nrm.forEach(branch => {
+                if (branch.toLowerCase().includes(searchTerm)) {
+                    matchingBranches.push({ name: branch, region: 'nrm' });
+                }
+            });
+            
+            // Display results
+            if (matchingBranches.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>No branches found matching "${searchTerm}"</p>
+                    </div>
+                `;
+                resultsCount.textContent = 'No results found';
+            } else {
+                matchingBranches.forEach(branch => {
+                    const resultItem = createBranchResultItem(branch.name, branch.region);
+                    resultsContainer.appendChild(resultItem);
+                });
+                resultsCount.textContent = `Found ${matchingBranches.length} branch(es)`;
+            }
+        }
+        
+        // NEW: Display all branches in search results
+        function displayAllBranches() {
+            const resultsContainer = document.getElementById('search-results');
+            const resultsCount = document.getElementById('search-results-count');
+            
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+            
+            // Add all branches
+            let allBranches = [];
+            
+            // Add Balmain branches
+            branches.balmain.forEach(branch => {
+                allBranches.push({ name: branch, region: 'balmain' });
+            });
+            
+            // Add Norich branches
+            branches.norich.forEach(branch => {
+                allBranches.push({ name: branch, region: 'norich' });
+            });
+            
+            // Add N.R.M branches
+            branches.nrm.forEach(branch => {
+                allBranches.push({ name: branch, region: 'nrm' });
+            });
+            
+            // Sort branches by name
+            allBranches.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Display all branches
+            allBranches.forEach(branch => {
+                const resultItem = createBranchResultItem(branch.name, branch.region);
+                resultsContainer.appendChild(resultItem);
+            });
+            
+            resultsCount.textContent = `Showing all ${allBranches.length} branches`;
+        }
+        
+        // NEW: Create a branch result item for the search interface
+        function createBranchResultItem(branchName, region) {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'search-result-item';
+            
+            // Determine region display name and class
+            let regionDisplay, regionClass;
+            if (region === 'balmain') {
+                regionDisplay = 'Balmain Stores';
+                regionClass = 'region-balmain';
+            } else if (region === 'norich') {
+                regionDisplay = 'Norich Sales';
+                regionClass = 'region-norich';
+            } else {
+                regionDisplay = 'N.R.M Region';
+                regionClass = 'region-nrm';
+            }
+            
+            resultItem.innerHTML = `
+                <div class="branch-name">
+                    ${branchName}
+                    <span class="branch-region ${regionClass}">${regionDisplay}</span>
+                </div>
+                <div class="branch-checks">
+                    <div class="check-item">
+                        <div class="check-label">Batch Job</div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="${branchName}-batchjob" data-type="batchjob" data-branch="${branchName}" data-region="${region}">
+                            <label for="${branchName}-batchjob">Done</label>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-label">Backup</div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="${branchName}-backup" data-type="backup" data-branch="${branchName}" data-region="${region}">
+                            <label for="${branchName}-backup">Done</label>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-label">Data Ports</div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="${branchName}-dataports" data-type="dataports" data-branch="${branchName}" data-region="${region}">
+                            <label for="${branchName}-dataports">Done</label>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-label">FDMS</div>
+                        <select class="fdms-select" id="${branchName}-fdms" data-type="fdms" data-branch="${branchName}" data-region="${region}">
+                            <option value="">Select Status</option>
+                            <option value="successful">Successful</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            return resultItem;
         }
         
         // Calendar functions
@@ -1386,10 +1577,8 @@
             document.getElementById('report-date').value = formatDate(selectedDate);
             document.getElementById('stats-date').textContent = formatDate(selectedDate);
             
-            // Populate branch lists
-            populateBranchList('balmain-branches', branches.balmain, 'Balmain Stores');
-            populateBranchList('norich-branches', branches.norich, 'Norich Sales');
-            populateBranchList('nrm-branches', branches.nrm, 'N.R.M Region');
+            // NEW: Populate search results with all branches
+            displayAllBranches();
             
             // Populate branch filter
             const branchFilter = document.getElementById('filter-branch');
@@ -1441,56 +1630,6 @@
             return dates;
         }
         
-        function populateBranchList(listId, branchArray, region) {
-            const listElement = document.getElementById(listId);
-            listElement.innerHTML = '';
-            
-            branchArray.forEach(branch => {
-                const listItem = document.createElement('li');
-                listItem.className = 'branch-item';
-                
-                // For N.R.M region, don't include "N.R.M Region" in branch name
-                const displayName = region === 'N.R.M Region' ? branch : `${branch} - ${region}`;
-                
-                listItem.innerHTML = `
-                    <div class="branch-name">${displayName}</div>
-                    <div class="branch-checks">
-                        <div class="check-item">
-                            <div class="check-label">Batch Job</div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="${branch}-batchjob" data-type="batchjob" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-batchjob">Done</label>
-                            </div>
-                        </div>
-                        <div class="check-item">
-                            <div class="check-label">Backup</div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="${branch}-backup" data-type="backup" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-backup">Done</label>
-                            </div>
-                        </div>
-                        <div class="check-item">
-                            <div class="check-label">Data Ports</div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="${branch}-dataports" data-type="dataports" data-branch="${branch}" data-region="${region}">
-                                <label for="${branch}-dataports">Done</label>
-                            </div>
-                        </div>
-                        <div class="check-item">
-                            <div class="check-label">FDMS</div>
-                            <select class="fdms-select" id="${branch}-fdms" data-type="fdms" data-branch="${branch}" data-region="${region}">
-                                <option value="">Select Status</option>
-                                <option value="successful">Successful</option>
-                                <option value="failed">Failed</option>
-                            </select>
-                        </div>
-                    </div>
-                `;
-                
-                listElement.appendChild(listItem);
-            });
-        }
-        
         function setupEventListeners() {
             // Calendar functionality
             document.getElementById('report-date').addEventListener('click', function() {
@@ -1516,8 +1655,14 @@
                 });
             });
             
-            // Search functionality for N.R.M region - real-time as you type
-            document.getElementById('nrm-search').addEventListener('input', searchNRMBranches);
+            // NEW: Search functionality for all branches - real-time as you type
+            document.getElementById('branch-search').addEventListener('input', searchBranches);
+            
+            // NEW: Clear search button
+            document.getElementById('clear-search').addEventListener('click', function() {
+                document.getElementById('branch-search').value = '';
+                searchBranches();
+            });
             
             // Previous date button
             document.getElementById('prev-date').addEventListener('click', function() {
@@ -1597,7 +1742,7 @@
                 exportData();
             });
             
-            // Filter functionality
+            // Filter functionality - FIXED: All filters work together
             document.getElementById('filter-date').addEventListener('change', loadHistory);
             document.getElementById('filter-region').addEventListener('change', loadHistory);
             document.getElementById('filter-branch').addEventListener('change', loadHistory);
@@ -1827,6 +1972,7 @@
             loadHistory();
         }
         
+        // FIXED: History filtering with proper AND logic
         function loadHistory() {
             const history = JSON.parse(localStorage.getItem('backupHistory')) || [];
             const tableBody = document.getElementById('history-table-body');
@@ -1850,71 +1996,60 @@
             
             // Add history rows with filtering
             history.forEach(report => {
-                // Apply date filter
-                if (dateFilter && report.dateValue !== dateFilter) {
-                    return;
-                }
-                
                 report.branches.forEach(branch => {
-                    // Apply region filter
-                    if (regionFilter && branch.region !== regionFilter) {
-                        return;
+                    // Apply ALL filters with AND logic
+                    let passesDateFilter = !dateFilter || report.dateValue === dateFilter;
+                    let passesRegionFilter = !regionFilter || branch.region === regionFilter;
+                    let passesBranchFilter = !branchFilter || branch.name === branchFilter;
+                    let passesBatchjobFilter = !batchjobFilter || 
+                        (batchjobFilter === 'completed' && branch.batchjob) ||
+                        (batchjobFilter === 'pending' && !branch.batchjob);
+                    let passesFdmsFilter = !fdmsFilter || 
+                        (fdmsFilter === 'successful' && branch.fdms === 'successful') ||
+                        (fdmsFilter === 'failed' && branch.fdms === 'failed');
+                    
+                    // Only show if ALL filters pass
+                    if (passesDateFilter && passesRegionFilter && passesBranchFilter && 
+                        passesBatchjobFilter && passesFdmsFilter) {
+                        
+                        // Update summary counters
+                        summaryTotal++;
+                        if (branch.batchjob) summaryBatchjobs++;
+                        if (branch.backup) summaryBackups++;
+                        if (branch.dataports) summaryDataports++;
+                        if (branch.fdms === 'successful') summaryFdms++;
+                        
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td>${report.date}</td>
+                            <td>${branch.name}</td>
+                            <td>${branch.region}</td>
+                            <td>
+                                <span class="status-badge ${branch.batchjob ? 'status-completed' : 'status-pending'}">
+                                    ${branch.batchjob ? 'Done' : 'Pending'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${branch.backup ? 'status-completed' : 'status-pending'}">
+                                    ${branch.backup ? 'Done' : 'Pending'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${branch.dataports ? 'status-completed' : 'status-pending'}">
+                                    ${branch.dataports ? 'Done' : 'Pending'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${branch.fdms === 'successful' ? 'status-completed' : branch.fdms === 'failed' ? 'fdms-failed' : 'status-pending'}">
+                                    ${branch.fdms || 'Not Set'}
+                                </span>
+                            </td>
+                            <td>System Admin</td>
+                        `;
+                        
+                        tableBody.appendChild(row);
                     }
-                    
-                    // Apply branch filter
-                    if (branchFilter && branch.name !== branchFilter) {
-                        return;
-                    }
-                    
-                    // Apply batchjob filter
-                    if (batchjobFilter) {
-                        if (batchjobFilter === 'completed' && !branch.batchjob) return;
-                        if (batchjobFilter === 'pending' && branch.batchjob) return;
-                    }
-                    
-                    // Apply fdms filter
-                    if (fdmsFilter) {
-                        if (fdmsFilter === 'successful' && branch.fdms !== 'successful') return;
-                        if (fdmsFilter === 'failed' && branch.fdms !== 'failed') return;
-                    }
-                    
-                    // Update summary counters
-                    summaryTotal++;
-                    if (branch.batchjob) summaryBatchjobs++;
-                    if (branch.backup) summaryBackups++;
-                    if (branch.dataports) summaryDataports++;
-                    if (branch.fdms === 'successful') summaryFdms++;
-                    
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${report.date}</td>
-                        <td>${branch.name}</td>
-                        <td>${branch.region}</td>
-                        <td>
-                            <span class="status-badge ${branch.batchjob ? 'status-completed' : 'status-pending'}">
-                                ${branch.batchjob ? 'Done' : 'Pending'}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge ${branch.backup ? 'status-completed' : 'status-pending'}">
-                                ${branch.backup ? 'Done' : 'Pending'}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge ${branch.dataports ? 'status-completed' : 'status-pending'}">
-                                ${branch.dataports ? 'Done' : 'Pending'}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge ${branch.fdms === 'successful' ? 'status-completed' : branch.fdms === 'failed' ? 'fdms-failed' : 'status-pending'}">
-                                ${branch.fdms || 'Not Set'}
-                            </span>
-                        </td>
-                        <td>System Admin</td>
-                    `;
-                    
-                    tableBody.appendChild(row);
                 });
             });
             
